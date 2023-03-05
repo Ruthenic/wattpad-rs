@@ -2,7 +2,7 @@
 
 use crate::raw_api::{get, get_text};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
@@ -25,16 +25,81 @@ pub enum Copyright {
 
 impl fmt::Display for Copyright {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Copyright::ALL_RIGHTS_RESERVED => write!(f, "All Rights Reserved"),
-            Copyright::PUBLIC_DOMAIN => write!(f, "Public Domain"),
-            Copyright::CC_BY => write!(f, "CC-BY"),
-            Copyright::CC_BY_NC => write!(f, "CC-BY-NC"),
-            Copyright::CC_BY_NC_ND => write!(f, "CC-BY-NC-ND"),
-            Copyright::CC_BY_NC_SA => write!(f, "CC-BY-NC-SA"),
-            Copyright::CC_BY_SA => write!(f, "CC-BY-SA"),
-            Copyright::CC_BY_ND => write!(f, "CC-BY-ND"),
-        }
+        let val = match self {
+            Copyright::ALL_RIGHTS_RESERVED => "All Rights Reserved",
+            Copyright::PUBLIC_DOMAIN => "Public Domain",
+            Copyright::CC_BY => "CC-BY",
+            Copyright::CC_BY_NC => "CC-BY-NC",
+            Copyright::CC_BY_NC_ND => "CC-BY-NC-ND",
+            Copyright::CC_BY_NC_SA => "CC-BY-NC-SA",
+            Copyright::CC_BY_SA => "CC-BY-SA",
+            Copyright::CC_BY_ND => "CC-BY-ND",
+        };
+
+        write!(f, "{}", val)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize_repr, PartialEq)]
+#[repr(i8)]
+pub enum Category {
+    None = -1,
+    UnknownValue = 0,
+    TeenFiction = 1,
+    Poetry = 2,
+    Fantasy = 3,
+    Romance = 4,
+    ScienceFiction = 5,
+    Fanfiction = 6,
+    Humor = 7,
+    MysteryOrThriller = 8, // FIXME: dumbass name
+    Horror = 9,
+    // There is no 10
+    Adventure = 11,
+    Paranormal = 12,
+    Spiritual = 13,
+    Action = 14,
+    // There is also no 15
+    NonFiction = 16,
+    ShortStory = 17,
+    Vampire = 18,
+    Random = 19, // ??????
+    // There is also also no 20
+    GeneralFiction = 21,
+    Werewolf = 22,
+    HistoricalFiction = 23,
+    ChickLit = 24, // WHAT THE FUCK IS CHICKLIT
+}
+
+impl fmt::Display for Category {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let val = match self {
+            Category::None => "None",
+            Category::UnknownValue => "Unknown",
+            Category::TeenFiction => "Teen Fiction",
+            Category::Poetry => "Poetry",
+            Category::Fantasy => "Fantasy",
+            Category::Romance => "Romance",
+            Category::ScienceFiction => "Science Fiction",
+            Category::Fanfiction => "Fanfiction",
+            Category::Humor => "Humor",
+            Category::MysteryOrThriller => "Mystery / Thriller",
+            Category::Horror => "Horror",
+            Category::Adventure => "Adventure",
+            Category::Paranormal => "Paranormal",
+            Category::Spiritual => "Spiritual",
+            Category::Action => "Action",
+            Category::NonFiction => "Non-Fiction",
+            Category::ShortStory => "Short Story",
+            Category::Vampire => "Vampire",
+            Category::Random => "Random",
+            Category::GeneralFiction => "General Fiction",
+            Category::Werewolf => "Werewolf",
+            Category::HistoricalFiction => "Historical Fiction",
+            Category::ChickLit => "ChickLit",
+        };
+
+        write!(f, "{}", val)
     }
 }
 
@@ -54,13 +119,13 @@ pub struct Story {
     pub description: String,
     pub cover: String, // FIXME: is this a URL?
     pub completed: bool,
-    pub categories: Vec<i64>, // FIXME: type these with enum
+    pub categories: Vec<Category>,
     pub tags: Vec<String>,
     pub rating: i64, // FIXME: figure out what the numbers mean MASON WHAT DO THEY MEAN
     pub copyright: Copyright,
     pub url: String,
     pub num_parts: i64,
-    pub last_published_part: LastPublishedPart, // FIXME: see top: this can definitely be replaced with a normal Part
+    pub last_published_part: LastPublishedPart,
     parts: Vec<Part>,
     pub deleted: bool,
     pub tag_rankings: Vec<TagRanking>,
@@ -89,6 +154,8 @@ impl Story {
             client,
         )
         .await?;
+
+        println!("{}", serde_json::to_string_pretty(&res)?);
 
         Story::from_json_value(res, client)
     }
@@ -316,7 +383,7 @@ struct SearchResults {
 
 impl SearchResults {
     pub fn from_json_value(val: Value) -> Result<SearchResults> {
-        let mut results = serde_json::from_value::<SearchResults>(val)?;
+        let results = serde_json::from_value::<SearchResults>(val)?;
         Ok(results)
     }
 }
@@ -324,13 +391,6 @@ impl SearchResults {
 #[derive(Deserialize, Debug, Clone)]
 struct SearchStory {
     id: String,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-struct SearchTag {
-    pub count: i64,
-    pub id: String,
-    pub name: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
