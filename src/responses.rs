@@ -7,6 +7,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
 use serde_repr::Deserialize_repr;
+use std::fmt;
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Debug, Deserialize_repr)]
@@ -20,6 +21,21 @@ pub enum Copyright {
     CC_BY_NC_SA = 6,
     CC_BY_SA = 7,
     CC_BY_ND = 8,
+}
+
+impl fmt::Display for Copyright {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Copyright::ALL_RIGHTS_RESERVED => write!(f, "All Rights Reserved"),
+            Copyright::PUBLIC_DOMAIN => write!(f, "Public Domain"),
+            Copyright::CC_BY => write!(f, "CC-BY"),
+            Copyright::CC_BY_NC => write!(f, "CC-BY-NC"),
+            Copyright::CC_BY_NC_ND => write!(f, "CC-BY-NC-ND"),
+            Copyright::CC_BY_NC_SA => write!(f, "CC-BY-NC-SA"),
+            Copyright::CC_BY_SA => write!(f, "CC-BY-SA"),
+            Copyright::CC_BY_ND => write!(f, "CC-BY-ND"),
+        }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
