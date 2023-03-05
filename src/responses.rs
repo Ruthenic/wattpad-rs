@@ -155,8 +155,6 @@ impl Story {
         )
         .await?;
 
-        println!("{}", serde_json::to_string_pretty(&res)?);
-
         Story::from_json_value(res, client)
     }
 
