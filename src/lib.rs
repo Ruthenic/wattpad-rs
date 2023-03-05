@@ -11,6 +11,7 @@ use reqwest::{
 pub use responses::{Copyright, SearchSort, SearchType};
 use responses::{Search, Story};
 
+#[derive(Clone)]
 pub struct Wattpad {
     client: Client,
 }

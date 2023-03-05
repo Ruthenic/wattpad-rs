@@ -1,7 +1,7 @@
 [package]
 name = "wattpad"
 description = "Unofficial async Rust wrapper around the (various) Wattpad API(s)"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 readme = "README.md"
 license = "BSD-3-Clause"
