@@ -1,17 +1,15 @@
 mod raw_api;
 mod responses;
 
-use raw_api::get;
-
 use anyhow::{Context, Result};
 use regex::Regex;
 use reqwest::{
     header::{self, HeaderMap, HeaderValue},
     redirect::Policy,
-    Client, Proxy, Url,
+    Client,
 };
 pub use responses::{Copyright, SearchSort, SearchType};
-use responses::{Part, Search, Story, User};
+use responses::{Search, Story};
 
 pub struct Wattpad {
     client: Client,
