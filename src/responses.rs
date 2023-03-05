@@ -6,10 +6,12 @@ use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
+use serde_repr::Deserialize_repr;
 
 #[allow(non_camel_case_types)]
-#[derive(Deserialize)]
-enum Copyright {
+#[derive(Clone, Debug, Deserialize_repr)]
+#[repr(u8)]
+pub enum Copyright {
     ALL_RIGHTS_RESERVED = 1,
     PUBLIC_DOMAIN = 2,
     CC_BY = 3,
@@ -39,7 +41,7 @@ pub struct Story {
     pub categories: Vec<i64>, // FIXME: type these with enum
     pub tags: Vec<String>,
     pub rating: i64, // FIXME: figure out what the numbers mean MASON WHAT DO THEY MEAN
-    pub copyright: i64,
+    pub copyright: Copyright,
     pub url: String,
     pub num_parts: i64,
     pub last_published_part: LastPublishedPart, // FIXME: see top: this can definitely be replaced with a normal Part

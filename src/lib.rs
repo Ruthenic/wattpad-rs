@@ -10,8 +10,8 @@ use reqwest::{
     redirect::Policy,
     Client, Proxy, Url,
 };
+pub use responses::{Copyright, SearchSort, SearchType};
 use responses::{Part, Search, Story, User};
-pub use responses::{SearchSort, SearchType};
 
 pub struct Wattpad {
     client: Client,
