@@ -32,8 +32,14 @@ mod story_tests {
         let watt = Wattpad::new()
             .await
             .expect("Failed to create Wattpad client struct");
-        watt.get_story("327425279")
+        let story = watt
+            .get_story("327425279")
             .await
             .expect("Failed to load story");
+
+        story
+            .get_author()
+            .await
+            .expect("Failed to get author from story");
     }
 }

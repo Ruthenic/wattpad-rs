@@ -1,15 +1,17 @@
-mod rawAPI;
+mod raw_api;
 mod responses;
 
-use rawAPI::get;
+use raw_api::get;
 
 use anyhow::{Context, Result};
 use regex::Regex;
 use reqwest::{
     header::{self, HeaderMap, HeaderValue},
-    Client, Url,
+    redirect::Policy,
+    Client, Proxy, Url,
 };
-use responses::{Part, Story, User};
+use responses::{Part, Search, Story, User};
+pub use responses::{SearchSort, SearchType};
 
 pub struct Wattpad {
     client: Client,
@@ -55,32 +57,32 @@ impl Wattpad {
 
         let client = Client::builder()
             .user_agent("Mozilla/5.0 (Windows NT 10.0; rv:108.0) Gecko/20100101 Firefox/108.0")
-            .default_headers(headers)
             .cookie_store(true)
+            .default_headers(headers)
+            .redirect(Policy::limited(10))
             .build()
             .context("Failed to build client")?;
+
         Ok(Wattpad { client })
     }
 
-    pub async fn get_story(self, id: &str) -> Result<Story> {
-        let res = get(
-            format!("/api/v3/stories/{}", id), vec![
-                ("drafts", "0"),
-                ("mature", "1"),
-                ("include_deleted", "1"),
-                ("fields", "id,title,length,createDate,modifyDate,voteCount,readCount,commentCount,url,promoted,sponsor,language,user,description,cover,highlight_colour,completed,isPaywalled,paidModel,categories,numParts,readingPosition,deleted,dateAdded,lastPublishedPart(createDate),tags,copyright,rating,story_text_url(text),,parts(id,title,voteCount,commentCount,videoId,readCount,photoUrl,createDate,modifyDate,length,voted,deleted,text_url(text),dedication,url,wordCount),isAdExempt,tagRankings")
-            ],
-            false,
-            &self.client,
-        )
-        .await?;
-
-        Story::from_json_value(res, self.client)
+    pub async fn get_story(&self, id: &str) -> Result<Story> {
+        Story::from_id(id.to_string(), &self.client).await
     }
 
-    pub async fn get_author_from_story(self, story: Story) -> Result<User> {
-        let res = get(format!("/api/v3/users/{}", story._user.fullname), vec![("fields", "username,description,avatar,name,email,genderCode,language,birthdate,verified,isPrivate,ambassador,is_staff,follower,following,backgroundUrl,votesReceived,numFollowing,numFollowers,createDate,followerRequest,website,facebook,twitter,followingRequest,numStoriesPublished,numLists,location,externalId,programs,showSocialNetwork,verified_email,has_accepted_latest_tos,email_reverification_status,highlight_colour,safety(isMuted,isBlocked),has_writer_subscription")], false, &self.client).await?;
-
-        Ok(serde_json::from_value::<User>(res)?)
+    pub async fn search(
+        &self,
+        query: &str,
+        search_type: SearchType,
+        search_sort: SearchSort,
+        limit: i64,
+    ) -> Result<Search> {
+        Ok(Search {
+            query: query.to_string(),
+            search_type,
+            search_sort,
+            limit,
+            client: &self.client,
+        })
     }
 }
