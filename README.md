@@ -8,6 +8,7 @@ See [docs.rs](https://docs.rs/wattpad)
 Stories:
 ```rust
 use wattpad::Wattpad;
+
 #[tokio::main]
 async fn main() {
     let watt = Wattpad::new()
@@ -24,6 +25,7 @@ async fn main() {
 Searches:
 ```rust
 use wattpad::{SearchSort, SearchType, Wattpad};
+
 #[tokio::main]
 async fn main() {
     let watt = Wattpad::new()
@@ -39,7 +41,7 @@ async fn main() {
             30,
         )
         .await
-    .unwrap();
+        .unwrap();
 
     let text_results = text_search.page(0).await.unwrap();
 
@@ -55,7 +57,7 @@ async fn main() {
             30,
         )
         .await
-    .unwrap();
+        .unwrap();
 
     let tag_results = tag_search.page(0).await.unwrap();
 
