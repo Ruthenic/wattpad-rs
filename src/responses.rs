@@ -10,7 +10,7 @@ use serde_repr::Deserialize_repr;
 use std::fmt;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Debug, Deserialize_repr)]
+#[derive(Clone, Debug, Deserialize_repr, PartialEq)]
 #[repr(u8)]
 pub enum Copyright {
     ALL_RIGHTS_RESERVED = 1,
