@@ -2,7 +2,8 @@
 
 use crate::raw_api::{get, get_text};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
+use regex::Regex;
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
@@ -208,7 +209,7 @@ pub struct Part {
     pub deleted: Option<bool>,
     // FIXME: we should *really* use separate Paragraph structs (this makes comments way easier to handle as well)
     #[serde(skip_deserializing)]
-    pub html: String,
+    html: String,
 }
 
 impl Part {
@@ -216,6 +217,38 @@ impl Part {
         let part = serde_json::from_value::<Part>(val)?;
         Ok(part)
     }
+
+    pub fn get_paragraphs(&self) -> Result<Vec<Paragraph>> {
+        // in theory this should never be able to error
+        let regex = Regex::new("<p data-p-id=\"(.{32})\">(.+?)</p>").unwrap();
+
+        let mut thing: Vec<Paragraph> = vec![];
+
+        for regex_match in regex.find_iter(self.html.as_str()) {
+            let captures = regex
+                .captures(regex_match.into())
+                .context("Failed to get captures of paragraph")?;
+            let para = Paragraph {
+                id: captures
+                    .get(1)
+                    .map(|e| e.as_str().to_string())
+                    .context("Failed to get ID of paragraph")?,
+                html: captures
+                    .get(2)
+                    .map(|e| e.as_str().to_string())
+                    .context("Failed to get HTML of paragraph")?,
+            };
+            thing.push(para)
+        }
+
+        Ok(thing)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Paragraph {
+    pub id: String,
+    pub html: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]

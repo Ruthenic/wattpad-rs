@@ -21,7 +21,7 @@ impl Wattpad {
         // we can just use a temporary client here, no special handling needed
         let tmp_client = Client::new();
 
-        // FIXME: should be configurable, see comment in rawAPI
+        // FIXME: should be configurable, see comment in raw_api
         let res = tmp_client.get("https://wattpad.com").send().await?;
         let res = res.text().await?;
 
