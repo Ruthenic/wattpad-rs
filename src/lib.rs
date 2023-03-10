@@ -8,12 +8,11 @@ use reqwest::{
     redirect::Policy,
     Client,
 };
-pub use responses::{Copyright, SearchSort, SearchType};
-use responses::{Search, Story};
+pub use responses::{Copyright, Part, Search, SearchSort, SearchType, Story};
 
 #[derive(Clone)]
 pub struct Wattpad {
-    client: Client,
+    pub client: Client,
 }
 
 impl Wattpad {
