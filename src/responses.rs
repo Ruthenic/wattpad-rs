@@ -183,6 +183,7 @@ impl Story {
             )
             .await?
             .to_string();
+            new_parts[idx].client = &self.client;
         }
 
         Ok(new_parts)
@@ -207,14 +208,29 @@ pub struct Part {
     #[serde(rename = "text_url")]
     pub text_url: TextURL,
     pub deleted: Option<bool>,
-    // FIXME: we should *really* use separate Paragraph structs (this makes comments way easier to handle as well)
+    #[serde(skip_deserializing)]
+    client: Client,
     #[serde(skip_deserializing)]
     html: String,
 }
 
 impl Part {
-    pub fn from_json_value(val: Value) -> Result<Part> {
+    pub async fn from_id(id: String, client: &Client) -> Result<Part> {
+        let res = get(
+            format!("/api/v3/story_parts/{}", id), vec![
+                ("fields", "id,title,voteCount,commentCount,videoId,readCount,photoUrl,createDate,modifyDate,length,voted,deleted,text_url(text),dedication,url,wordCount")
+            ],
+            false,
+            client,
+        )
+        .await?;
+
+        Part::from_json_value(res, client)
+    }
+
+    pub fn from_json_value(val: Value, client: &Client) -> Result<Part> {
         let part = serde_json::from_value::<Part>(val)?;
+        part.client = client;
         Ok(part)
     }
 
@@ -237,6 +253,7 @@ impl Part {
                     .get(2)
                     .map(|e| e.as_str().to_string())
                     .context("Failed to get HTML of paragraph")?,
+                client: &self.client,
             };
             thing.push(para)
         }
@@ -249,6 +266,8 @@ impl Part {
 pub struct Paragraph {
     pub id: String,
     pub html: String,
+    #[serde(skip_deserializing)]
+    client: Client,
 }
 
 #[derive(Deserialize, Debug, Clone)]

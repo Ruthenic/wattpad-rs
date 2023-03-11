@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod parts_tests {
-    use wattpad::Wattpad;
+    use wattpad::{Part, Wattpad};
 
     #[tokio::test]
     async fn init() {
@@ -44,5 +44,16 @@ mod parts_tests {
         let parts = story.get_parts().await.expect("Failed to get parts");
 
         assert_eq!(parts[0].title, "Chapter 1 - Welcome to the Studio");
+    }
+
+    #[tokio::test]
+    async fn from_id() {
+        let watt = Wattpad::new()
+            .await
+            .expect("Failed to create Wattpad client struct");
+
+        let part = Part::from_id("1288785987".to_string(), &watt.client)
+            .await
+            .expect("Failed to get part from ID");
     }
 }
