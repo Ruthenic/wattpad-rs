@@ -183,7 +183,7 @@ impl Story {
             )
             .await?
             .to_string();
-            new_parts[idx].client = &self.client;
+            new_parts[idx].client = self.client.clone();
         }
 
         Ok(new_parts)
@@ -229,8 +229,8 @@ impl Part {
     }
 
     pub fn from_json_value(val: Value, client: &Client) -> Result<Part> {
-        let part = serde_json::from_value::<Part>(val)?;
-        part.client = client;
+        let mut part = serde_json::from_value::<Part>(val)?;
+        part.client = client.clone();
         Ok(part)
     }
 
@@ -253,7 +253,7 @@ impl Part {
                     .get(2)
                     .map(|e| e.as_str().to_string())
                     .context("Failed to get HTML of paragraph")?,
-                client: &self.client,
+                client: self.client.clone(),
             };
             thing.push(para)
         }
@@ -262,7 +262,7 @@ impl Part {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Paragraph {
     pub id: String,
     pub html: String,
