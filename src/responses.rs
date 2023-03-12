@@ -174,7 +174,7 @@ impl Story {
     pub async fn get_parts(&self) -> Result<Vec<Part>> {
         let mut new_parts = self.parts.clone();
 
-        for idx in 0..(new_parts.len() - 1) {
+        for (idx, _) in new_parts.clone().iter().enumerate() {
             new_parts[idx].html = get_text(
                 "/apiv2/storytext".to_string(),
                 vec![("id", new_parts[idx].id.to_string().as_str())],
