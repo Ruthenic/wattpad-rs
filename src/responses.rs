@@ -236,7 +236,7 @@ impl Part {
 
     pub fn get_paragraphs(&self) -> Result<Vec<Paragraph>> {
         // in theory this should never be able to error
-        let regex = Regex::new("<p data-p-id=\"(.{32})\">(.+?)</p>").unwrap();
+        let regex = Regex::new("<p data-p-id=\"(.{32})\"(|\\s+[^>]*)>(.*?)</p\\s*>").unwrap();
 
         let mut thing: Vec<Paragraph> = vec![];
 
@@ -244,13 +244,21 @@ impl Part {
             let captures = regex
                 .captures(regex_match.into())
                 .context("Failed to get captures of paragraph")?;
+            let attributes = captures
+                .get(2)
+                .map(|e| e.as_str())
+                .context("Failed to get attributes of paragraph")?;
             let para = Paragraph {
                 id: captures
                     .get(1)
                     .map(|e| e.as_str().to_string())
                     .context("Failed to get ID of paragraph")?,
+                attributes: match attributes {
+                    "" => None,
+                    _ => Some(attributes.to_string()),
+                },
                 html: captures
-                    .get(2)
+                    .get(3)
                     .map(|e| e.as_str().to_string())
                     .context("Failed to get HTML of paragraph")?,
                 client: self.client.clone(),
@@ -265,6 +273,7 @@ impl Part {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Paragraph {
     pub id: String,
+    pub attributes: Option<String>,
     pub html: String,
     #[serde(skip_deserializing)]
     client: Client,
