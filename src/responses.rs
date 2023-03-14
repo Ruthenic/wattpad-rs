@@ -127,7 +127,7 @@ pub struct Story {
     pub url: String,
     pub num_parts: i64,
     pub last_published_part: LastPublishedPart,
-    parts: Vec<Part>,
+    pub _parts: Vec<Part>,
     pub deleted: bool,
     pub tag_rankings: Vec<TagRanking>,
     #[serde(rename = "highlight_colour")]
@@ -172,7 +172,7 @@ impl Story {
     }
 
     pub async fn get_parts(&self) -> Result<Vec<Part>> {
-        let mut new_parts = self.parts.clone();
+        let mut new_parts = self._parts.clone();
 
         for (idx, _) in new_parts.clone().iter().enumerate() {
             new_parts[idx].html = get_text(
@@ -187,6 +187,27 @@ impl Story {
         }
 
         Ok(new_parts)
+    }
+
+    pub async fn get_part(&self, index: usize) -> Result<Part> {
+        // FIXME: this error handling is probably terrible
+        let mut new_part = self
+            ._parts
+            .get(index)
+            .context("Invalid part index?")?
+            .clone();
+
+        new_part.html = get_text(
+            "/apiv2/storytext".to_string(),
+            vec![("id", new_part.id.to_string().as_str())],
+            false,
+            &self.client,
+        )
+        .await?
+        .to_string();
+        new_part.client = self.client.clone();
+
+        Ok(new_part)
     }
 }
 

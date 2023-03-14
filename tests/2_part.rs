@@ -47,12 +47,28 @@ mod parts_tests {
     }
 
     #[tokio::test]
+    async fn single_part() {
+        let watt = Wattpad::new()
+            .await
+            .expect("Failed to create Wattpad client struct");
+        let story = watt
+            .get_story("327425279")
+            .await
+            .expect("Failed to load story");
+
+        let part = story.get_part(0).await.expect("Failed to get parts");
+
+        assert_eq!(part.id, 1288785987);
+        assert_eq!(part.title, "Chapter 1 - Welcome to the Studio");
+    }
+
+    #[tokio::test]
     async fn from_id() {
         let watt = Wattpad::new()
             .await
             .expect("Failed to create Wattpad client struct");
 
-        let part = Part::from_id("1288785987".to_string(), &watt.client)
+        let _part = Part::from_id("1288785987".to_string(), &watt.client)
             .await
             .expect("Failed to get part from ID");
     }
