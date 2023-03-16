@@ -107,36 +107,65 @@ impl fmt::Display for Category {
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Story {
+    /// The ID of the story
     pub id: String,
+    /// The title of the story
     pub title: String,
+    /// The approximate length of the story in characters
     pub length: i64,
+    /// The creation date in ISO format
     pub create_date: String,
+    /// The date of the last modification to the story in ISO format
     pub modify_date: String,
+    /// The amount of votes on the story
     pub vote_count: i64,
+    /// The amount of people who have read the story
     pub read_count: i64,
+    /// The total amount of comments on the story
     pub comment_count: i64,
+    /// The language of the story
     pub language: Language,
+    /// (DO NOT USE UNLESS YOU KNOW WHAT YOU'RE DOING)
+    /// The story struct's internal representation of a user
     pub _user: FakeUser,
+    /// The description of the story
     pub description: String,
-    pub cover: String, // FIXME: is this a URL?
+    /// The link to the (image) cover of the story
+    pub cover: String,
+    /// Whether the story is marked as completed or not
     pub completed: bool,
+    /// A list of categories the work falls under (only the first seems to be an actual category?)
     pub categories: Vec<Category>,
+    /// A list of tags applied to the story
     pub tags: Vec<String>,
+    /// The rating of the story (1 is non-mature, 4 is mature, I don't know if other values even show up)
     pub rating: i64, // FIXME: figure out what the numbers mean MASON WHAT DO THEY MEAN
+    /// The licensing of the story
     pub copyright: Copyright,
+    /// The hardlink to the story on wattpad.com
     pub url: String,
+    /// The amount of parts the story has
     pub num_parts: i64,
-    pub last_published_part: LastPublishedPart,
+    /// (DO NOT USE UNLESS YOU KNOW WHAT YOU'RE DOING)
+    /// The story struct's internal list of Parts
     pub _parts: Vec<Part>,
+    /// Whether the story is deleted (I guess???)
     pub deleted: bool,
+    /// Where the story ranks in popularity on it's tags
     pub tag_rankings: Vec<TagRanking>,
     #[serde(rename = "highlight_colour")]
+    /// The highlight color of the story
     pub highlight_color: String,
+    /// Whether the story is promoted by Wattpad or not
     pub promoted: bool,
+    /// If the story does not show ads
     pub is_ad_exempt: bool,
     #[serde(rename = "story_text_url")]
+    /// A struct that shows where the URL to get the text of the story is
     pub story_text_url: TextURL,
+    /// Whether the story requires payment to view
     pub is_paywalled: bool,
+    /// The type of payment required (ie upfront, subscription I guess?)
     pub paid_model: String,
     #[serde(skip_deserializing)]
     client: Client,
