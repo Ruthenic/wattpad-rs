@@ -5,13 +5,13 @@ use crate::raw_api::{get, get_text};
 use anyhow::{Context, Result};
 use regex::Regex;
 use reqwest::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_repr::Deserialize_repr;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Debug, Deserialize_repr, PartialEq)]
+#[derive(Clone, Debug, Serialize_repr, Deserialize_repr, PartialEq)]
 #[repr(u8)]
 pub enum Copyright {
     ALL_RIGHTS_RESERVED = 1,
@@ -41,7 +41,7 @@ impl fmt::Display for Copyright {
     }
 }
 
-#[derive(Clone, Debug, Deserialize_repr, PartialEq)]
+#[derive(Clone, Debug, Serialize_repr, Deserialize_repr, PartialEq)]
 #[repr(i8)]
 pub enum Category {
     None = -1,
@@ -104,7 +104,7 @@ impl fmt::Display for Category {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Story {
     /// The ID of the story
@@ -167,7 +167,7 @@ pub struct Story {
     pub is_paywalled: bool,
     /// The type of payment required (ie upfront, subscription I guess?)
     pub paid_model: String,
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     client: Client,
 }
 
@@ -240,7 +240,7 @@ impl Story {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Part {
     pub id: i64,
@@ -258,9 +258,9 @@ pub struct Part {
     #[serde(rename = "text_url")]
     pub text_url: TextURL,
     pub deleted: Option<bool>,
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     client: Client,
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     html: String,
 }
 
@@ -320,16 +320,16 @@ impl Part {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Paragraph {
     pub id: String,
     pub attributes: Option<String>,
     pub html: String,
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     client: Client,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     #[serde(rename = "name")]
@@ -367,7 +367,7 @@ pub struct User {
     pub programs: Programs,
     pub external_id: String,
     pub show_social_network: bool,
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     pub client: Client,
 }
 
@@ -484,7 +484,7 @@ impl Search<'_> {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct SearchResults {
     stories: Vec<SearchStory>,
@@ -497,49 +497,49 @@ impl SearchResults {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct SearchStory {
     id: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct FakeUser {
     pub avatar: String,
     pub fullname: String,
     pub name: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Language {
     pub id: i64,
     pub name: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LastPublishedPart {
     pub create_date: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct TextURL {
     pub text: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct TagRanking {
     pub name: String,
     pub rank: i64,
     pub total: i64,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Programs {
     pub wattpad_starts: Option<bool>,
     pub wattpad_circle: Option<bool>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Safety {
     pub is_muted: bool,
