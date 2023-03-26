@@ -8,7 +8,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::fmt;
+use std::{fmt, future::Future, ops::Index};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Debug, Serialize_repr, Deserialize_repr, PartialEq)]
@@ -404,7 +404,7 @@ pub struct Search<'a> {
 }
 
 impl Search<'_> {
-    pub async fn page(&self, page_number: i64) -> Result<Vec<Story>> {
+    pub async fn page(&self, page_number: i64) -> Result<SearchResults> {
         let search_result;
         match self.search_type {
             SearchType::Text | SearchType::Title => {
@@ -423,7 +423,7 @@ impl Search<'_> {
                 let res = get(
                     "/v4/stories".to_string(),
                     vec![
-                        ("fields", "stories(id)"),
+                        ("fields", "stories(id,title,description,cover)"),
                         ("query", query),
                         (
                             "filter",
@@ -443,7 +443,7 @@ impl Search<'_> {
 
                 search_result = SearchResults::from_json_value(res)?;
             }
-            SearchType::Tag => {
+            /* SearchType::Tag => {
                 let api_path = format!(
                     "/v5/{}list",
                     match self.search_sort {
@@ -471,23 +471,72 @@ impl Search<'_> {
                 .await?;
 
                 search_result = SearchResults::from_json_value(res)?;
-            }
+            } */
+            SearchType::Tag => match self.search_sort {
+                SearchSort::Hot => {
+                    let limit = self.limit.to_string();
+                    let limit = limit.as_str();
+                    let offset = (self.limit * page_number).to_string();
+                    let offset = offset.as_str();
+
+                    let res = get(
+                        "/v5/hotlist".to_string(),
+                        vec![
+                            ("tags", &self.query),
+                            ("offset", offset),
+                            ("limit", limit),
+                            ("mature", "1"),
+                        ],
+                        true,
+                        &self.client,
+                    )
+                    .await?;
+
+                    search_result = SearchResults::from_json_value(res)?;
+                }
+                SearchSort::New => {
+                    let query = self
+                        .query
+                        .split(",")
+                        .map(|tag| format!("#{}", tag))
+                        .collect::<Vec<String>>()
+                        .join(" ");
+
+                    let limit = self.limit.to_string();
+                    let limit = limit.as_str();
+                    let offset = (self.limit * page_number).to_string();
+                    let offset = offset.as_str();
+
+                    let res = get(
+                        "/v4/stories".to_string(),
+                        vec![
+                            ("fields", "stories(id,title,description,cover)"),
+                            ("query", query.as_str()),
+                            ("filter", "new"),
+                            ("limit", limit),
+                            ("offset", offset),
+                            ("mature", "1"),
+                        ],
+                        false,
+                        &self.client,
+                    )
+                    .await?;
+
+                    search_result = SearchResults::from_json_value(res)?;
+                }
+            },
         };
 
-        let mut stories: Vec<Story> = vec![];
-
-        for fake_story in search_result.stories {
-            let story = Story::from_id(fake_story.id, &self.client).await?;
-            stories.push(story)
-        }
-        Ok(stories)
+        Ok(search_result)
     }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct SearchResults {
-    stories: Vec<SearchStory>,
+pub struct SearchResults {
+    pub stories: Vec<SearchStory>,
+    #[serde(skip_deserializing, skip_serializing)]
+    pub client: Client,
 }
 
 impl SearchResults {
@@ -495,11 +544,29 @@ impl SearchResults {
         let results = serde_json::from_value::<SearchResults>(val)?;
         Ok(results)
     }
+
+    pub async fn get(&self, idx: usize) -> Result<Story> {
+        Story::from_id(self.stories[idx].clone().id, &self.client).await
+    }
+
+    pub async fn get_all(&self) -> Result<Vec<Story>> {
+        let mut stories: Vec<Story> = vec![];
+
+        for fake_story in self.stories.clone() {
+            let story = Story::from_id(fake_story.id, &self.client).await?;
+            stories.push(story)
+        }
+        Ok(stories)
+    }
 }
 
+/// Struct with limited metadata of the story (so you don't have to call the get story API unless you need more detailed data)
 #[derive(Deserialize, Serialize, Debug, Clone)]
-struct SearchStory {
-    id: String,
+pub struct SearchStory {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub cover: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
