@@ -8,12 +8,13 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{fmt, future::Future, ops::Index};
+use std::fmt;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Debug, Serialize_repr, Deserialize_repr, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize_repr, Deserialize_repr, PartialEq)]
 #[repr(u8)]
 pub enum Copyright {
+    #[default]
     ALL_RIGHTS_RESERVED = 1,
     PUBLIC_DOMAIN = 2,
     CC_BY = 3,
@@ -41,9 +42,10 @@ impl fmt::Display for Copyright {
     }
 }
 
-#[derive(Clone, Debug, Serialize_repr, Deserialize_repr, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize_repr, Deserialize_repr, PartialEq)]
 #[repr(i8)]
 pub enum Category {
+    #[default]
     None = -1,
     UnknownValue = 0,
     TeenFiction = 1,
@@ -104,8 +106,8 @@ impl fmt::Display for Category {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
+#[derive(Default, Deserialize, Serialize, Debug, Clone)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Story {
     /// The ID of the story
     pub id: String,
@@ -561,7 +563,8 @@ impl SearchResults {
 }
 
 /// Struct with limited metadata of the story (so you don't have to call the get story API unless you need more detailed data)
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
+#[serde(default)]
 pub struct SearchStory {
     pub id: String,
     pub title: String,
@@ -569,26 +572,26 @@ pub struct SearchStory {
     pub cover: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 pub struct FakeUser {
     pub avatar: String,
     pub fullname: String,
     pub name: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 pub struct Language {
     pub id: i64,
     pub name: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LastPublishedPart {
     pub create_date: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 pub struct TextURL {
     pub text: String,
 }
