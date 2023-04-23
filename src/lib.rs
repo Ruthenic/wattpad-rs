@@ -64,6 +64,18 @@ impl Wattpad {
         Ok(Wattpad { client })
     }
 
+    /// Authenticates the Wattpad struct as a user
+    pub async fn authenticate(&self, username: String, password: String) -> Result<()> {
+        self.client
+            .post("https://www.wattpad.com/login")
+            .body(format!("username={username}&password={password}"))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn get_story(&self, id: &str) -> Result<Story> {
         Story::from_id(id.to_string(), &self.client).await
     }
