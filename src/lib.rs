@@ -21,7 +21,10 @@ impl Wattpad {
         let tmp_client = Client::new();
 
         // FIXME: should be configurable, see comment in raw_api
-        let res = tmp_client.get("https://wattpad.com").send().await?;
+        let res = tmp_client
+            .get("https://www.wattpad.com/stories/adventure")
+            .send()
+            .await?;
         let res = res.text().await?;
 
         // unwrapping this should be safe (unless our regex somehow breaks)
